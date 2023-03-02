@@ -188,44 +188,20 @@ ram은 0 [] 1 []  ... 100 [] ... 4,294,967,293 [] 이렇게 있는데 0 1 ... 10
 
 
 
-, CASE
-           WHEN INSTR((SELECT CD_MLNM
-                       FROM TP_COMMON_CODE_V_01
-                       WHERE APP_ID = 'TP'
-                         AND CD_GRP_ID = 'GRP_TP_001'
-                         AND CD_ID = D.ITEM_CATG_CMCD
-                         AND CD_MLNM NOT LIKE 'PERI_TR_NOPD'), 'PERI') != 0 OR
-                INSTR((SELECT CD_MLNM
-                       FROM TP_COMMON_CODE_V_01
-                       WHERE APP_ID = 'TP'
-                         AND CD_GRP_ID = 'GRP_TP_001'
-                         AND CD_ID = D.ITEM_CATG_CMCD), 'CELL_TR') != 0 OR
-                INSTR((SELECT CD_MLNM
-                       FROM TP_COMMON_CODE_V_01
-                       WHERE APP_ID = 'TP'
-                         AND CD_GRP_ID = 'GRP_TP_001'
-                         AND CD_ID = D.ITEM_CATG_CMCD), 'CORE_TR') != 0
-               THEN DECODE(B.VRF_TML_G_VAL, NULL, '', B.VRF_TML_B_VAL)
-           ELSE '' END                                                                          AS         DIODE1_VAL
-     , CASE
-           WHEN INSTR((SELECT CD_MLNM
-                       FROM TP_COMMON_CODE_V_01
-                       WHERE APP_ID = 'TP'
-                         AND CD_GRP_ID = 'GRP_TP_001'
-                         AND CD_ID = D.ITEM_CATG_CMCD
-                         AND CD_MLNM NOT LIKE 'PERI_TR_NOPD'), 'PERI') != 0 OR
-                INSTR((SELECT CD_MLNM
-                       FROM TP_COMMON_CODE_V_01
-                       WHERE APP_ID = 'TP'
-                         AND CD_GRP_ID = 'GRP_TP_001'
-                         AND CD_ID = D.ITEM_CATG_CMCD), 'CELL_TR') != 0 OR
-                INSTR((SELECT CD_MLNM
-                       FROM TP_COMMON_CODE_V_01
-                       WHERE APP_ID = 'TP'
-                         AND CD_GRP_ID = 'GRP_TP_001'
-                         AND CD_ID = D.ITEM_CATG_CMCD), 'CORE_TR') != 0
-               THEN
-               (CASE
-                    WHEN B.VRF_TML_NG_VAL != 'F' AND B.VRF_TML_NG_VAL IS NOT NULL THEN B.VRF_TML_B_VAL
-                    ELSE B.VRF_TML_B2_VAL END)
-           ELSE '' END                                                                          AS         DIODE2_VAL
+public static String DIODE_FORMATTER(ItemListVO list, String diode) {
+		String text = "";
+
+		String[] checkItemCatgArr = {"PERI_TR", "PERI_TR_HV", "PERI_TR_ASYM_LOD", "PERI_TR_HV_ASYM_LOD", "CORE_TR", "CELL_TR"}; // 추가 필요
+
+		if (Arrays.asList(checkItemCatgArr).contains(list.getItemCatgNm())) {
+			if (diode.equals("first")) {
+				text = list.getVrfTmlGVal() != null && !list.getVrfTmlGVal().equals("#") ? list.getVrfTmlBVal() : "";
+			} else if (diode.equals("second")) {
+				text = list.getVrfTmlNgVal() != null && !list.getVrfTmlNgVal().equals("F") && !list.getVrfTmlNgVal().equals("#") ? list.getVrfTmlBVal() : list.getVrfTmlB2Val();
+			}
+		} else if (diode.equals("second")) {
+			text = list.getVrfTmlB2Val();
+		}
+
+		return text;
+	}
